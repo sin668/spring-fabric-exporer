@@ -30,8 +30,8 @@ opentracing:
   jaeger:
     service-name: spring-boot-demo
     enable-b3-propagation: true
-    http-sender:
-      url: http://cluster-collector-collector.openshift-distributed-tracing.svc.cluster.local:4317
+#    http-sender:
+#      url: http://cluster-collector-collector.openshift-distributed-tracing.svc.cluster.local:4317
     udp-sender:
       host: localhost
       port: 6831

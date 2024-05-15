@@ -32,6 +32,9 @@ spec:
         - name: ${project.artifactId}
           image: >-
             ${project.artifactId}:${project.version}
+          env:
+            - name: OTEL_METRICS_EXPORTER
+              value: none
           resources: {}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
