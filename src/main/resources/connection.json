@@ -1,0 +1,152 @@
+{
+    "name": "hlf-network",
+    "version": "1.0.0",
+    "client": {
+      "organization": "Org1",
+      "connection": {
+        "timeout": {
+          "peer": {
+            "endorser": "300"
+          },
+          "orderer": "300"
+        }
+      }
+    },
+    "channels": {
+      "mychannel": {
+        "orderers": [
+          "ord-node1.istio.ocp4.yichengpai.cn"
+        ],
+        "peers": {
+          "peer0-org1.istio.ocp4.yichengpai.cn": {
+            "endorsingPeer": true,
+            "chaincodeQuery": true,
+            "ledgerQuery": true,
+            "eventSource": true
+          },
+          "peer0-org2.istio.ocp4.yichengpai.cn": {
+            "endorsingPeer": true,
+            "chaincodeQuery": true,
+            "ledgerQuery": true,
+            "eventSource": true
+          }
+        }
+      }
+    },
+    "organizations": {
+      "Org1": {
+        "mspid": "Org1MSP",
+        "peers": [
+          "peer0-org1.istio.ocp4.yichengpai.cn"
+        ],
+        "certificateAuthorities": [
+          "org1-ca"
+        ],
+        "adminPrivateKeyPEM": {
+          "path": "conf/peer0-org1.istio.ocp4.yichengpai.cn/peer/priv.key"
+        },
+        "signedCertPEM": {
+          "path": "conf/peer0-org1.istio.ocp4.yichengpai.cn/peer/cert.pem"
+        }
+      },
+      "Org2": {
+        "mspid": "Org2MSP",
+        "peers": [
+          "peer0-org2.istio.ocp4.yichengpai.cn"
+        ],
+        "certificateAuthorities": [
+          "org2-ca"
+        ],
+        "adminPrivateKeyPEM": {
+          "path": "conf/peer0-org2.istio.ocp4.yichengpai.cn/peer/priv.key"
+        },
+        "signedCertPEM": {
+          "path": "conf/peer0-org2.istio.ocp4.yichengpai.cn/peer/cert.pem"
+        }
+      }
+    },
+    "orderers": {
+      "ord-node1.istio.ocp4.yichengpai.cn": {
+        "url": "grpcs://ord-node1.istio.ocp4.yichengpai.cn:443",
+        "mspid": "OrdererMSP",
+        "grpcOptions": {
+          "ssl-target-name-override": "ord-node1.istio.ocp4.yichengpai.cn",
+          "hostnameOverride": "ord-node1.istio.ocp4.yichengpai.cn"
+        },
+        "tlsCACerts": {
+          "path": "conf/ord-node1.istio.ocp4.yichengpai.cn/ord/ca.crt"
+        }
+      }
+    },
+    "peers": {
+      "peer0-org1.istio.ocp4.yichengpai.cn": {
+        "url": "grpcs://peer0-org1.istio.ocp4.yichengpai.cn:443",
+        "grpcOptions": {
+          "ssl-target-name-override": "peer0-org1.istio.ocp4.yichengpai.cn",
+          "hostnameOverride": "peer0-org1.istio.ocp4.yichengpai.cn",
+          "request-timeout": 120001
+        },
+        "tlsCACerts": {
+          "path": "conf/peer0-org1.istio.ocp4.yichengpai.cn/peer/ca.crt"
+        }
+      },
+      "peer0-org2.istio.ocp4.yichengpai.cn": {
+        "url": "grpcs://peer0-org2.istio.ocp4.yichengpai.cn:443",
+        "grpcOptions": {
+          "ssl-target-name-override": "peer0-org2.istio.ocp4.yichengpai.cn",
+          "hostnameOverride": "peer0-org2.istio.ocp4.yichengpai.cn",
+          "request-timeout": 120001
+        },
+        "tlsCACerts": {
+          "path": "conf/peer0-org2.istio.ocp4.yichengpai.cn/peer/ca.crt"
+        }
+      }
+    },
+    "certificateAuthorities": {
+        "ord-ca": {
+            "url": "https://172.18.188.95:31794",
+            "grpcOptions": {
+                "verify": true
+            },
+            "tlsCACerts": {
+                "path": "conf/ord-node1.istio.ocp4.yichengpai.cn/ca/ca.crt"
+            },
+            "registrar": [
+                {
+                    "enrollId": "admin",
+                    "enrollSecret": "adminpw"
+                }
+            ]
+        },
+        "org1-ca": {
+            "url": "https://172.18.188.95:32632",
+            "grpcOptions": {
+                "verify": true
+            },
+            "tlsCACerts": {
+                "path": "conf/peer0-org1.istio.ocp4.yichengpai.cn/ca/ca.crt"
+            },
+            "registrar": [
+                {
+                    "enrollId": "admin",
+                    "enrollSecret": "adminpw"
+                }
+            ]
+        },
+        "org2-ca": {
+            "url": "https://172.18.188.95:32116",
+            "grpcOptions": {
+                "verify": true
+            },
+            "tlsCACerts": {
+                "path": "conf/peer0-org2.istio.ocp4.yichengpai.cn/ca/ca.crt"
+            },
+            "registrar": [
+                {
+                    "enrollId": "admin",
+                    "enrollSecret": "adminpw"
+                }
+            ]
+        }
+    }
+}

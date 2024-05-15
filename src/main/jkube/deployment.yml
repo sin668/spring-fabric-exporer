@@ -1,0 +1,84 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ${project.artifactId}
+  namespace: ${jkube.namespace}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: ${project.artifactId}
+  template:
+    metadata:
+      labels:
+        deployment: ${project.artifactId}
+    spec:
+      volumes:
+        - name: jaeger-production-trusted-ca
+          configMap:
+            name: jaeger-production-trusted-ca
+            items:
+              - key: ca-bundle.crt
+                path: tls-ca-bundle.pem
+            defaultMode: 420
+        - name: jaeger-production-service-ca
+          configMap:
+            name: jaeger-production-service-ca
+            items:
+              - key: service-ca.crt
+                path: service-ca.crt
+            defaultMode: 420
+      containers:
+        - name: ${project.artifactId}
+          image: >-
+            ${project.artifactId}:${project.version}
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+        - name: jaeger-agent            
+          ports:
+            - name: zk-compact-trft
+              containerPort: 5775
+              protocol: UDP
+            - name: config-rest
+              containerPort: 5778
+              protocol: TCP
+            - name: jg-compact-trft
+              containerPort: 6831
+              protocol: UDP
+            - name: jg-binary-trft
+              containerPort: 6832
+              protocol: UDP
+            - name: admin-http
+              containerPort: 14271
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: jaeger-production-trusted-ca
+              readOnly: true
+              mountPath: /etc/pki/ca-trust/extracted/pem
+            - name: jaeger-production-service-ca
+              readOnly: true
+              mountPath: /etc/pki/ca-trust/source/service-ca
+          terminationMessagePolicy: File
+          image: >-
+            registry.redhat.io/rhosdt/jaeger-agent-rhel8@sha256:3e1ba1ee591592252d89de9fefcda9827994046a85f66fc4462866f7f23c590a
+          args:
+            - >-
+              --reporter.grpc.host-port=dns:///jaeger-production-collector-headless.openshift-distributed-tracing.svc:14250
+            - >-
+              --reporter.grpc.tls.ca=/etc/pki/ca-trust/source/service-ca/service-ca.crt
+            - '--reporter.grpc.tls.enabled=true'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

@@ -1,0 +1,37 @@
+# Fabric Network Configure      
+spring:         
+   fabric:
+      chaincode: 
+         identify: fabcar
+         name: fabcar
+         version: 1.0
+      channel: mychannel
+      peers: 2
+      organizations:
+      - org1
+      - org2
+      name: hlf-network
+      gateway:
+         wallet:
+            memory: false
+            file: wallet
+            identify: admin
+      network:
+         file: conf/connection.json
+         name: hlf-network
+# Fabric explorer
+      explorer: 
+         title: Fabric Explorer
+         logo: camel.png
+         copyright: Ecsoya (jin.liu@soyatec.com)
+         hyperledger-explorer-url: http://www.hyperleder.org
+         path: /explorer
+opentracing:
+  jaeger:
+    service-name: spring-boot-demo
+    enable-b3-propagation: true
+    http-sender:
+      url: http://cluster-collector-collector.openshift-distributed-tracing.svc.cluster.local:4317
+    udp-sender:
+      host: localhost
+      port: 6831

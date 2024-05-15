@@ -1,0 +1,121 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  annotations:
+    app.kubernetes.io/vcs-uri: 'git@github.com:snowdrop/rest-http-example.git'
+  name: ${project.artifactId}
+  namespace: ${fabric8.namespace}
+  labels:
+    app: ${project.artifactId}
+    chaincode: ${project.artifactId}
+    version: ${project.version}
+    app.kubernetes.io/name: ${project.artifactId}
+    app.openshift.io/runtime-version: ${project.version}
+    group: ${project.groupId}
+    provider: fabric8
+spec:
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - ${project.artifactId}
+        from:
+          kind: ImageStreamTag
+          namespace: hlf-operator
+          name: '${project.artifactId}:${project.version}'
+  replicas: 1
+  revisionHistoryLimit: 2
+  test: false
+  selector:
+    app: ${project.artifactId}
+    chaincode: ${project.artifactId}
+    group: ${project.groupId}
+    provider: fabric8
+  template:
+    metadata:
+      namespace: ${fabric8.namespace}
+      labels:
+        app: ${project.artifactId}
+        chaincode: ${project.artifactId}
+        version: ${project.version}
+        app.kubernetes.io/name: ${project.artifactId}
+        app.openshift.io/runtime-version: ${project.version}
+        group: ${project.groupId}
+        provider: fabric8
+      annotations:
+        app.kubernetes.io/vcs-uri: 'git@github.com:snowdrop/rest-http-example.git'
+    spec:
+      volumes:
+        - name: jaeger-production-trusted-ca
+          configMap:
+            name: jaeger-production-trusted-ca
+            items:
+              - key: ca-bundle.crt
+                path: tls-ca-bundle.pem
+            defaultMode: 420
+        - name: jaeger-production-service-ca
+          configMap:
+            name: jaeger-production-service-ca
+            items:
+              - key: service-ca.crt
+                path: service-ca.crt
+            defaultMode: 420
+      containers:
+        - name: ${project.artifactId}
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/${fabric8.namespace}/${project.artifactId}:${project.version}
+          env:
+            - name: OTEL_METRICS_EXPORTER
+              value: none
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: false
+        - name: jaeger-agent            
+          ports:
+            - name: zk-compact-trft
+              containerPort: 5775
+              protocol: UDP
+            - name: config-rest
+              containerPort: 5778
+              protocol: TCP
+            - name: jg-compact-trft
+              containerPort: 6831
+              protocol: UDP
+            - name: jg-binary-trft
+              containerPort: 6832
+              protocol: UDP
+            - name: admin-http
+              containerPort: 14271
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: jaeger-production-trusted-ca
+              readOnly: true
+              mountPath: /etc/pki/ca-trust/extracted/pem
+            - name: jaeger-production-service-ca
+              readOnly: true
+              mountPath: /etc/pki/ca-trust/source/service-ca
+          terminationMessagePolicy: File
+          image: >-
+            registry.redhat.io/rhosdt/jaeger-agent-rhel8@sha256:3e1ba1ee591592252d89de9fefcda9827994046a85f66fc4462866f7f23c590a
+          args:
+            - >-
+              --reporter.grpc.host-port=dns:///jaeger-production-collector-headless.openshift-distributed-tracing.svc:14250
+            - >-
+              --reporter.grpc.tls.ca=/etc/pki/ca-trust/source/service-ca/service-ca.crt
+            - '--reporter.grpc.tls.enabled=true'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
