@@ -14,13 +14,6 @@ spec:
         deployment: ${project.artifactId}
     spec:
       volumes:
-        - name: jaeger-production-trusted-ca
-          configMap:
-            name: jaeger-production-trusted-ca
-            items:
-              - key: ca-bundle.crt
-                path: tls-ca-bundle.pem
-            defaultMode: 420
         - name: jaeger-production-service-ca
           configMap:
             name: jaeger-production-service-ca
@@ -60,9 +53,6 @@ spec:
               protocol: TCP
           imagePullPolicy: IfNotPresent
           volumeMounts:
-            - name: jaeger-production-trusted-ca
-              readOnly: true
-              mountPath: /etc/pki/ca-trust/extracted/pem
             - name: jaeger-production-service-ca
               readOnly: true
               mountPath: /etc/pki/ca-trust/source/service-ca
