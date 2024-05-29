@@ -35,6 +35,8 @@ spec:
           env:
             - name: OTEL_METRICS_EXPORTER
               value: none
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://cluster-collector-collector.openshift-distributed-tracing.svc.cluster.local:4317
           resources: {}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
